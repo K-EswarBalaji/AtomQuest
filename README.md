@@ -67,26 +67,44 @@ Backend:
 
 ### Prerequisites
 
-- Node.js
-- PostgreSQL
-- Docker, if you want to run the full stack in containers
+- Node.js (recommended >= 16)
+- Docker (optional - for full stack containers)
 
-### Backend
+### Notes about local dev vs production
+
+- Local development uses a small SQLite database by default (no local Postgres required). Production uses Postgres and the `DATABASE_URL` env var.
+- The backend seeds demo data with `node seed.js` (creates demo users, one cycle, and sample goals).
+- CRA (frontend) may run on `http://localhost:3000` or `http://localhost:3001` depending on port availability. The backend accepts both origins in development.
+
+### Environment variables
+
+Create or copy `backend/.env` from an example if present. At minimum set:
+
+- `PORT` - backend port (default: `5000`)
+- `DB_STORAGE` - path to sqlite storage for local dev (e.g. `./database.sqlite`)
+- `JWT_SECRET` - secret used for signing JWTs (use a secure value for production)
+- `DATABASE_URL` - (production) Postgres connection string
+- `REACT_APP_API_BASE_URL` - frontend API base (e.g. `http://localhost:5000/api`)
+
+### Backend (local quickstart)
 
 ```bash
 cd backend
-npm install
-npm run migrate
-npm run seed
-npm run dev
+npm ci
+# Ensure backend/.env exists and DB_STORAGE is set for local sqlite
+node seed.js    # creates demo users, a cycle, and sample goals
+npm start       # runs server on port 5000
 ```
 
-### Frontend
+If you prefer to run migrations/seeds via sequelize CLI, use the project scripts (if available) instead of `node seed.js`.
+
+### Frontend (local quickstart)
 
 ```bash
 cd frontend
-npm install
-npm start
+npm ci
+# ensure frontend/.env contains REACT_APP_API_BASE_URL=http://localhost:5000/api
+npm start       # CRA may open on 3000 or 3001
 ```
 
 ### Docker
