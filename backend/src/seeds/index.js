@@ -9,7 +9,7 @@ const runSeeds = async () => {
     await db.sequelize.authenticate();
     console.log('✅ Database connected');
 
-    await db.sequelize.sync({ alter: true });
+    await db.sequelize.sync();
     console.log('✅ Models synchronized');
 
     await seedDatabase();

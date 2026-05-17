@@ -5,15 +5,20 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Select from '../components/Select';
 import Badge from '../components/Badge';
+import { useAuthStore } from '../context/authStore';
 import apiService from '../services/api';
 import { TrendingUp, MessageSquare } from 'lucide-react';
 
 const CheckInPage: React.FC = () => {
+  const { user } = useAuthStore();
+  const isManagerView = user?.role === 'MANAGER' || user?.role === 'ADMIN';
+
   const [goals, setGoals] = useState<any[]>([]);
   const [checkIns, setCheckIns] = useState<Record<string, any>>({});
   const [activeCycle, setActiveCycle] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
+  const [managerComments, setManagerComments] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -22,15 +27,33 @@ const CheckInPage: React.FC = () => {
         const cycleResponse = await apiService.getActiveCycle();
         setActiveCycle(cycleResponse.data);
 
-        const goalsResponse = await apiService.getEmployeeGoals(undefined, cycleResponse.data.id);
-        setGoals(goalsResponse.data.filter((g: any) => g.status === 'APPROVED'));
+        if (isManagerView) {
+          const [goalsResponse, checkInsResponse] = await Promise.all([
+            apiService.getTeamGoals(cycleResponse.data.id),
+            apiService.getCheckIns(undefined, cycleResponse.data.id)
+          ]);
 
-        const checkInsResponse = await apiService.getCheckIns(undefined, cycleResponse.data.id);
-        const checkInsByGoal: Record<string, any> = {};
-        checkInsResponse.data.forEach((ci: any) => {
-          checkInsByGoal[ci.goalId] = ci;
-        });
-        setCheckIns(checkInsByGoal);
+          setGoals(goalsResponse.data);
+
+          const checkInsByGoal: Record<string, any> = {};
+          const commentDrafts: Record<string, string> = {};
+          checkInsResponse.data.forEach((ci: any) => {
+            checkInsByGoal[ci.goalId] = ci;
+            commentDrafts[ci.id] = ci.managerComment || '';
+          });
+          setCheckIns(checkInsByGoal);
+          setManagerComments(commentDrafts);
+        } else {
+          const goalsResponse = await apiService.getEmployeeGoals(undefined, cycleResponse.data.id);
+          setGoals(goalsResponse.data.filter((g: any) => g.status === 'APPROVED'));
+
+          const checkInsResponse = await apiService.getCheckIns(undefined, cycleResponse.data.id);
+          const checkInsByGoal: Record<string, any> = {};
+          checkInsResponse.data.forEach((ci: any) => {
+            checkInsByGoal[ci.goalId] = ci;
+          });
+          setCheckIns(checkInsByGoal);
+        }
       } catch (err) {
         console.error('Failed to load check-in data', err);
       } finally {
@@ -39,9 +62,14 @@ const CheckInPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [isManagerView]);
 
   const handleSubmitCheckIn = async (goalId: string, actualAchievement: string, status: string, comment: string) => {
+    if (!activeCycle) {
+      setBanner({ type: 'error', text: 'Active cycle is not available' });
+      return;
+    }
+
     if (!actualAchievement) {
       setBanner({ type: 'error', text: 'Please enter actual achievement' });
       return;
@@ -71,6 +99,44 @@ const CheckInPage: React.FC = () => {
     }
   };
 
+  const handleSaveManagerComment = async (checkInId: string) => {
+    const comment = (managerComments[checkInId] || '').trim();
+
+    if (!comment) {
+      setBanner({ type: 'error', text: 'Please enter a manager comment' });
+      return;
+    }
+
+    setSubmitting(prev => ({ ...prev, [checkInId]: true }));
+    try {
+      await apiService.addManagerComment(checkInId, comment);
+
+      if (!activeCycle) return;
+
+      const [goalsResponse, checkInsResponse] = await Promise.all([
+        apiService.getTeamGoals(activeCycle.id),
+        apiService.getCheckIns(undefined, activeCycle.id)
+      ]);
+
+      setGoals(goalsResponse.data);
+
+      const checkInsByGoal: Record<string, any> = {};
+      const commentDrafts: Record<string, string> = {};
+      checkInsResponse.data.forEach((ci: any) => {
+        checkInsByGoal[ci.goalId] = ci;
+        commentDrafts[ci.id] = ci.managerComment || '';
+      });
+      setCheckIns(checkInsByGoal);
+      setManagerComments(commentDrafts);
+
+      setBanner({ type: 'success', text: 'Manager comment saved successfully!' });
+    } catch (err: any) {
+      setBanner({ type: 'error', text: err.response?.data?.message || 'Failed to save manager comment' });
+    } finally {
+      setSubmitting(prev => ({ ...prev, [checkInId]: false }));
+    }
+  };
+
   const calculateProgress = (actual: number, target: number, uom: string) => {
     if (uom === 'NUMERIC' || uom === 'PERCENTAGE') {
       return Math.min(100, (actual / target) * 100);
@@ -88,8 +154,14 @@ const CheckInPage: React.FC = () => {
         )}
 
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Quarterly Check-ins</h1>
-          <p className="text-slate-600 mt-1">Update your actual achievement against planned targets</p>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {isManagerView ? 'Team Check-ins' : 'Quarterly Check-ins'}
+          </h1>
+          <p className="text-slate-600 mt-1">
+            {isManagerView
+              ? 'Review team updates and leave manager feedback on submitted check-ins'
+              : 'Update your actual achievement against planned targets'}
+          </p>
         </div>
 
         {isLoading ? (
@@ -103,7 +175,9 @@ const CheckInPage: React.FC = () => {
             {goals.length === 0 ? (
               <Card>
                 <div className="text-center py-12">
-                  <p className="text-slate-600">No approved goals to update</p>
+                  <p className="text-slate-600">
+                    {isManagerView ? 'No team goals found for the current cycle' : 'No approved goals to update'}
+                  </p>
                 </div>
               </Card>
             ) : (
@@ -145,7 +219,20 @@ const CheckInPage: React.FC = () => {
                           )}
                         </div>
 
-                        {!checkIn && (
+                        {isManagerView ? (
+                          <ManagerCommentPanel
+                            goal={goal}
+                            checkIn={checkIn}
+                            comment={checkIn ? managerComments[checkIn.id] || checkIn.managerComment || '' : ''}
+                            onCommentChange={(value) => {
+                              if (checkIn) {
+                                setManagerComments(prev => ({ ...prev, [checkIn.id]: value }));
+                              }
+                            }}
+                            onSave={() => checkIn && handleSaveManagerComment(checkIn.id)}
+                            isSubmitting={checkIn ? !!submitting[checkIn.id] : false}
+                          />
+                        ) : !checkIn && (
                           <CheckInForm
                             goalId={goal.id}
                             onSubmit={(actual, status, comment) =>
@@ -184,6 +271,77 @@ interface CheckInFormProps {
   onSubmit: (actual: string, status: string, comment: string) => void;
   isSubmitting: boolean;
 }
+
+interface ManagerCommentPanelProps {
+  goal: any;
+  checkIn: any;
+  comment: string;
+  onCommentChange: (value: string) => void;
+  onSave: () => void;
+  isSubmitting: boolean;
+}
+
+const ManagerCommentPanel: React.FC<ManagerCommentPanelProps> = ({
+  goal,
+  checkIn,
+  comment,
+  onCommentChange,
+  onSave,
+  isSubmitting
+}) => {
+  if (!checkIn) {
+    return (
+      <div className="pt-3 border-t border-slate-200">
+        <p className="text-sm text-slate-600">
+          No check-in submitted yet for {goal.employee?.firstName} {goal.employee?.lastName}.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 pt-3 border-t border-slate-200">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div>
+          <p className="text-slate-500">Employee</p>
+          <p className="font-medium">{goal.employee?.firstName} {goal.employee?.lastName}</p>
+        </div>
+        <div>
+          <p className="text-slate-500">Check-in Status</p>
+          <Badge variant={checkIn.status === 'COMPLETED' ? 'success' : 'info'}>{checkIn.status}</Badge>
+        </div>
+        <div>
+          <p className="text-slate-500">Actual Achievement</p>
+          <p className="font-medium">{checkIn.actualAchievement}</p>
+        </div>
+        <div>
+          <p className="text-slate-500">Manager Feedback</p>
+          <p className="font-medium">{checkIn.managerComment ? 'Saved' : 'Pending'}</p>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-2">Manager Comment</label>
+        <textarea
+          value={comment}
+          onChange={(e) => onCommentChange(e.target.value)}
+          placeholder="Add feedback or next steps for this check-in..."
+          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          rows={3}
+        />
+      </div>
+
+      <Button
+        variant="primary"
+        onClick={onSave}
+        isLoading={isSubmitting}
+        className="w-full"
+      >
+        Save Manager Comment
+      </Button>
+    </div>
+  );
+};
 
 const CheckInForm: React.FC<CheckInFormProps> = ({ goalId, onSubmit, isSubmitting }) => {
   const [actual, setActual] = useState('');

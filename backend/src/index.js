@@ -4,14 +4,14 @@ const app = require('./app');
 
 const PORT = process.env.PORT || 5000;
 
-// Ensure database is connected and schema is synced before starting the server
+// Ensure database is connected before starting the server.
 db.sequelize.authenticate()
   .then(() => {
     console.log('✅ Database connected successfully');
-    return db.sequelize.sync({ alter: true });
+    return db.sequelize.sync();
   })
   .then(() => {
-    console.log('✅ Database schema synchronized (alter:true)');
+    console.log('✅ Database schema synchronized');
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
