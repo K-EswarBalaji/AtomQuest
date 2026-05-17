@@ -17,7 +17,8 @@ services:
           name: goalquest-db
           property: connectionString
       - key: FRONTEND_URL
-        value: https://goalquest-frontend.onrender.com
+        # Set this to your deployed frontend domain (e.g. https://your-app.vercel.app)
+        value: https://<your-frontend-domain>
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRE
@@ -32,6 +33,7 @@ services:
     staticPublishPath: frontend/build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://goalquest-backend.onrender.com/api
+        # Set this to your backend API URL (e.g. https://your-backend.onrender.com/api)
+        value: https://<your-backend-domain>/api
       - key: REACT_APP_ENV
         value: production
