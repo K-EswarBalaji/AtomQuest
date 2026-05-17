@@ -21,6 +21,7 @@ node_modules/
 # Build
 dist/
 build/
+coverage/
 *.log
 
 # Database
