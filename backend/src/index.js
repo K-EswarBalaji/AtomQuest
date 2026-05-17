@@ -50,6 +50,11 @@ db.sequelize.authenticate()
   .then(() => {
     console.log('✅ Models synchronized');
     
+    // Use Sequelize auto-sync in production to create/update tables without migrations
+    return db.sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    console.log('✅ Database schema synchronized (alter:true)');
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
