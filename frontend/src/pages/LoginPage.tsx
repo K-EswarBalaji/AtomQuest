@@ -24,6 +24,7 @@ const LoginPage: React.FC = () => {
       const response = await apiService.login(email, password);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      console.log('TOKEN (after login):', localStorage.getItem('token'));
       login(response.data.user, response.data.token);
       navigate('/dashboard');
     } catch (err: any) {

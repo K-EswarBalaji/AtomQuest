@@ -30,6 +30,7 @@ class ApiService {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
+          console.log('TOKEN (before 401 removal):', localStorage.getItem('token'));
           localStorage.removeItem('token');
           window.location.href = '/login';
         }
