@@ -1,6 +1,6 @@
 # GoalQuest Portal
 
-GoalQuest Portal is a goal setting and tracking web app for employees, managers, and admins. The current UI supports goal creation, approval, quarterly check-ins, team review, cycle management, user management, reports, and audit logs.
+GoalQuest Portal is a goal setting and tracking web app for employees, managers, and admins. The current UI supports goal creation, approval, quarterly check-ins, team review, cycle management, user management, reports, and audit logs. Production deployment uses Vercel for the frontend and Railway for the backend and database.
 
 ## What the website includes
 
@@ -84,7 +84,7 @@ Create or copy `backend/.env` from an example if present. At minimum set:
 - `DB_STORAGE` - path to sqlite storage for local dev (e.g. `./database.sqlite`)
 - `JWT_SECRET` - secret used for signing JWTs (use a secure value for production)
 - `DATABASE_URL` - (production) Postgres connection string
-- `REACT_APP_API_BASE_URL` - frontend API base (e.g. `http://localhost:5000/api`)
+- `REACT_APP_API_BASE_URL` - frontend API base (e.g. `http://localhost:5000/api` or `https://<railway-backend>/api`)
 
 ### Backend (local quickstart)
 
