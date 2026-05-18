@@ -10,16 +10,16 @@ module.exports = (sequelize) => {
     goalId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'Goals', key: 'id' }
+      references: { model: 'goals', key: 'id' }
     },
     cycleId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'Cycles', key: 'id' }
+      references: { model: 'cycles', key: 'id' }
     },
     managerId: {
       type: DataTypes.UUID,
-      references: { model: 'Users', key: 'id' }
+      references: { model: 'users', key: 'id' }
     },
     actualAchievement: {
       type: DataTypes.DECIMAL(10, 2),
@@ -38,7 +38,7 @@ module.exports = (sequelize) => {
     },
     approvedBy: {
       type: DataTypes.UUID,
-      references: { model: 'Users', key: 'id' }
+      references: { model: 'users', key: 'id' }
     }
   }, {
     timestamps: true,

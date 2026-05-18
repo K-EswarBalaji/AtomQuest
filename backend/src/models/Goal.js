@@ -10,12 +10,12 @@ module.exports = (sequelize) => {
     employeeId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'Users', key: 'id' }
+      references: { model: 'users', key: 'id' }
     },
     cycleId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'Cycles', key: 'id' }
+      references: { model: 'cycles', key: 'id' }
     },
     thrustArea: {
       type: DataTypes.STRING,
@@ -60,11 +60,11 @@ module.exports = (sequelize) => {
     },
     primaryOwnerId: {
       type: DataTypes.UUID,
-      references: { model: 'Users', key: 'id' }
+      references: { model: 'users', key: 'id' }
     },
     approvedBy: {
       type: DataTypes.UUID,
-      references: { model: 'Users', key: 'id' }
+      references: { model: 'users', key: 'id' }
     },
     approvalDate: DataTypes.DATE,
     rejectionReason: DataTypes.TEXT,
