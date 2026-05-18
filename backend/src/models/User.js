@@ -34,7 +34,7 @@ module.exports = (sequelize) => {
     department: DataTypes.STRING,
     reportingManagerId: {
       type: DataTypes.UUID,
-      references: { model: 'Users', key: 'id' }
+      references: { model: 'users', key: 'id' }
     },
     isActive: {
       type: DataTypes.BOOLEAN,
