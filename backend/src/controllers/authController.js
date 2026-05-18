@@ -1,4 +1,7 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const db = require('../models');
+const { User } = require('../models');
 const { generateToken, hashPassword, comparePassword } = require('../utils/auth');
 
 const authController = {
@@ -42,33 +45,55 @@ const authController = {
     try {
       const { email, password } = req.body;
 
-      const user = await db.User.findOne({ where: { email } });
+      console.log('LOGIN ATTEMPT:', email);
+
+      const user = await User.findOne({
+        where: { email }
+      });
+
       if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+        console.log('USER NOT FOUND');
+        return res.status(401).json({
+          message: 'Invalid email or password'
+        });
       }
 
-      const isPasswordValid = await comparePassword(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+      console.log('USER FOUND');
+
+      const isMatch = await bcrypt.compare(
+        password,
+        user.password
+      );
+
+      console.log('PASSWORD MATCH:', isMatch);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          message: 'Invalid email or password'
+        });
       }
 
-      await user.update({ lastLogin: new Date() });
-
-      const token = generateToken(user);
-      res.status(200).json({
-        message: 'Login successful',
-        token,
-        user: {
+      const token = jwt.sign(
+        {
           id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          department: user.department
+          role: user.role
+        },
+        process.env.JWT_SECRET || 'secret',
+        {
+          expiresIn: '7d'
         }
+      );
+
+      res.json({
+        token,
+        user
       });
     } catch (error) {
-      res.status(500).json({ message: 'Login failed', error: error.message });
+      console.error(error);
+
+      res.status(500).json({
+        message: 'Server error'
+      });
     }
   },
 
