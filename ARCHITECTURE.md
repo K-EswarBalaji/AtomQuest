@@ -2,17 +2,17 @@
 
 ## Overview
 
-GoalQuest Portal is a full-stack goal setting and tracking system with a React frontend, an Express backend, and a PostgreSQL database. The frontend handles login, role-based navigation, goals, approvals, check-ins, cycles, users, reports, and audit logs. The backend exposes REST APIs for authentication, goal workflow, check-ins, cycle management, and administrative actions.
+GoalQuest Portal is a full-stack goal setting and tracking system with a React frontend, an Express backend, and a PostgreSQL database. The frontend is deployed on Vercel, while the backend API and database run on Railway. The frontend handles login, role-based navigation, goals, approvals, check-ins, cycles, users, reports, and audit logs. The backend exposes REST APIs for authentication, goal workflow, check-ins, cycle management, and administrative actions.
 
 ## Architecture Diagram
 
 ```mermaid
 flowchart TB
-  U[User Browser] --> F[React 18 + TypeScript Frontend]
+  U[User Browser] --> F[React 18 + TypeScript Frontend (Vercel)]
   F --> R[React Router]
   F --> S[UI Components, Pages, State]
   F --> A[Axios API Service]
-  A --> B[Express API Backend]
+  A --> B[Express API Backend (Railway)]
 
   B --> M[Auth Middleware]
   B --> C[Controllers]
@@ -26,7 +26,7 @@ flowchart TB
   GC --> V[Validation Utilities]
   CC --> V
   B --> DB[Sequelize Models]
-  DB --> P[(PostgreSQL Database)]
+  DB --> P[(PostgreSQL Database - Railway)]
 
   B --> L[Audit Logs]
   C --> L
@@ -51,6 +51,11 @@ flowchart TB
 ### Data Layer
 - `backend/src/models/` defines Sequelize models and relationships
 - PostgreSQL stores users, cycles, goals, check-ins, and audit logs
+
+## Deployment
+- Frontend: Vercel (React build)
+- Backend API: Railway (Node/Express)
+- Database: Railway Postgres
 
 ## Core Data Flow
 

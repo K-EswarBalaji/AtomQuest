@@ -2,26 +2,21 @@
 
 ## System Overview
 
-GoalQuest is a comprehensive, cloud-ready web-based Goal Setting & Tracking Portal built with modern technologies. The system supports the complete lifecycle of employee goals - from creation and approval to quarterly check-ins and performance analytics.
+GoalQuest is a comprehensive, cloud-ready web-based Goal Setting & Tracking Portal built with modern technologies. The production deployment uses Vercel for the React frontend and Railway for the Express API and PostgreSQL database. The system supports the complete lifecycle of employee goals - from creation and approval to quarterly check-ins and performance analytics.
 
 ## Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      Frontend Layer                         │
-│  React 18 + TypeScript + TailwindCSS                        │
+│  React 18 + TypeScript + TailwindCSS (Vercel)               │
 │  (Responsive Web App - Mobile & Desktop)                    │
 └────────────────────┬────────────────────────────────────────┘
                      │ HTTPS/REST API
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│                    API Gateway / Load Balancer              │
-│                  (CORS & Rate Limiting)                     │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│                    Backend Layer                             │
-│         Node.js/Express + TypeScript                        │
+│                    Backend Layer (Railway)                  │
+│                   Node.js/Express                           │
 │  ┌────────────────────────────────────────────────────┐    │
 │  │  Authentication & Authorization (JWT)             │    │
 │  │  Role-Based Access Control (RBAC)                │    │
@@ -48,7 +43,7 @@ GoalQuest is a comprehensive, cloud-ready web-based Goal Setting & Tracking Port
 └────────────────────┬────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│              Database Layer                                 │
+│              Database Layer (Railway)                       │
 │  PostgreSQL 12+ (Primary Data Store)                        │
 │  ┌────────────────────────────────────────────────────┐    │
 │  │  Tables:                                           │    │
@@ -264,7 +259,13 @@ npm install
 npm start
 ```
 
-### Docker Deployment
+### Current Production Deployment (Vercel + Railway)
+
+- Frontend: Vercel (React build output)
+- Backend API: Railway (Node/Express)
+- Database: Railway Postgres
+
+### Docker Deployment (Optional)
 
 ```bash
 # Single command setup
@@ -276,7 +277,7 @@ docker-compose up
 # Admin: admin@company.com / password123
 ```
 
-### Cloud Deployment (AWS Example)
+### Cloud Deployment (AWS Example - Optional)
 
 ```bash
 # 1. Build Docker images
@@ -387,6 +388,6 @@ docker push <account>.dkr.ecr.us-east-1.amazonaws.com/goalquest-backend:latest
 
 ---
 
-**Last Updated**: May 2024
+**Last Updated**: May 2026
 **Version**: 1.0.0
 **Status**: Production Ready
