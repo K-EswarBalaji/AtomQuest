@@ -19,6 +19,7 @@ class ApiService {
     // Add token to requests
     this.api.interceptors.request.use((config) => {
       const token = localStorage.getItem('token');
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -30,9 +31,7 @@ class ApiService {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          console.log('TOKEN (before 401 removal):', localStorage.getItem('token'));
-          localStorage.removeItem('token');
-          window.location.href = '/login';
+          console.log('401 ERROR:', error.response.data);
         }
         return Promise.reject(error);
       }
